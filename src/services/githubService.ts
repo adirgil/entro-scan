@@ -5,15 +5,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// יוצרים מופע של Octokit עם הטוקן שלנו
 const octokit = new Octokit({
   auth: process.env.githubtoken,
 });
 
-/**
- * מביא רשימת קומיטים של ריפו נתון.
- * סורק בסדר יורד לפי תאריך (מהחדש לישן).
- */
 export async function getcommits(owner: string, repo: string) {
   const commits = [];
 
@@ -33,7 +28,6 @@ export async function getcommits(owner: string, repo: string) {
 
       commits.push(...response.data);
 
-      // 🔹 הוסף את השורה הזו בדיוק כאן:
       if (page >= 3) {
         // עצור אחרי 5 עמודים בלבד לבדיקה
         console.log("🛑 stopping early for debug after", page, "pages");
@@ -56,9 +50,6 @@ export async function getcommits(owner: string, repo: string) {
   return commits;
 }
 
-/**
- * מביא את כל פרטי הקומיט (כולל הדיפים של הקבצים ששונו).
- */
 export async function getcommitdetails(
   owner: string,
   repo: string,

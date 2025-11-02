@@ -32,7 +32,6 @@ export async function scancommit(owner: string, repo: string, sha: string) {
     }
   }
 
-  // ✨ שינוי כאן — קריאה, מיזוג, וכתיבה חזרה
   if (results.length > 0) {
     const filePath = "results.json";
     let existing: any[] = [];

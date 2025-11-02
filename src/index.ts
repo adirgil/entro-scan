@@ -30,6 +30,7 @@ async function main() {
     }
 
     if (!continueScanning) continue;
+    console.log("scanning commit", sha);
 
     await scancommit(owner, repo, sha);
     setlastcommit(sha);
