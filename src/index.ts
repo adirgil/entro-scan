@@ -4,11 +4,11 @@ import { getcommits } from "./services/githubService";
 import { scancommit } from "./services/scanner";
 import { getlastcommit, setlastcommit } from "./utils/storage";
 
-async function main() {
+async function main(ownerArg?: string, repoArg?: string, branchArg?: string) {
   const args = process.argv.slice(2);
-  const owner = args[0];
-  const repo = args[1];
-  const branch = args[2] || "main";
+  const owner = ownerArg || args[0];
+  const repo = repoArg || args[1];
+  const branch = branchArg || args[2] || "main";
 
   if (!owner || !repo) {
     console.error("Usage: npm run dev <owner> <repo>");
@@ -41,6 +41,10 @@ async function main() {
   console.log(`✅ Scan finished. Total commits scanned: ${scannedCount}`);
 }
 
-main().catch((err) => {
-  console.error("❌ Error during scan:", err);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("❌ Error during scan:", err);
+  });
+}
+
+export { main };
