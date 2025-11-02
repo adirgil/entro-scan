@@ -1,5 +1,3 @@
-// src/services/githubService.ts
-
 import { Octokit } from "@octokit/rest";
 import dotenv from "dotenv";
 
@@ -9,11 +7,14 @@ const octokit = new Octokit({
   auth: process.env.githubtoken,
 });
 
+/**
+ * Fetches all commits from a given GitHub repository branch.
+ * Handles pagination automatically.
+ */
 export async function getcommits(owner: string, repo: string, branch = "main") {
   const commits = [];
-
   let page = 1;
-  const perPage = 10;
+  const perPage = 50;
 
   while (true) {
     try {
@@ -25,29 +26,22 @@ export async function getcommits(owner: string, repo: string, branch = "main") {
         page,
       });
 
-      if (response.data.length === 0) break;
-
-      commits.push(...response.data);
-
-      if (page >= 3) {
-        // עצור אחרי 5 עמודים בלבד לבדיקה
-        console.log("🛑 stopping early for debug after", page, "pages");
+      if (response.data.length === 0) {
         break;
       }
 
-      if (response.data.length < perPage) break;
+      commits.push(...response.data);
 
+      if (response.data.length < perPage) {
+        break;
+      }
       page++;
     } catch (err: any) {
       if (err.status === 404) {
         console.error(`⚠️ Branch '${branch}' not found in ${owner}/${repo}.`);
-        break;
+      } else {
+        console.error("❌ Error fetching commits:", err.status, err.message);
       }
-      console.error(
-        "❌ Error fetching commits:",
-        err.status,
-        err.message || err
-      );
       break;
     }
   }
@@ -55,6 +49,9 @@ export async function getcommits(owner: string, repo: string, branch = "main") {
   return commits;
 }
 
+/**
+ * Fetches details and file diffs for a specific commit.
+ */
 export async function getcommitdetails(
   owner: string,
   repo: string,
@@ -65,6 +62,5 @@ export async function getcommitdetails(
     repo,
     ref: sha,
   });
-
   return response.data;
 }
