@@ -18,24 +18,39 @@ export async function getcommits(owner: string, repo: string) {
   const commits = [];
 
   let page = 1;
-  const perPage = 50; // אפשר לשנות לפי הצורך
+  const perPage = 10;
 
   while (true) {
-    const response = await octokit.repos.listCommits({
-      owner,
-      repo,
-      per_page: perPage,
-      page,
-    });
+    try {
+      const response = await octokit.repos.listCommits({
+        owner,
+        repo,
+        per_page: perPage,
+        page,
+      });
 
-    if (response.data.length === 0) break;
+      if (response.data.length === 0) break;
 
-    commits.push(...response.data);
+      commits.push(...response.data);
 
-    // אם קיבלנו פחות מהכמות המבוקשת - זה אומר שהגענו לסוף
-    if (response.data.length < perPage) break;
+      // 🔹 הוסף את השורה הזו בדיוק כאן:
+      if (page >= 3) {
+        // עצור אחרי 5 עמודים בלבד לבדיקה
+        console.log("🛑 stopping early for debug after", page, "pages");
+        break;
+      }
 
-    page++;
+      if (response.data.length < perPage) break;
+
+      page++;
+    } catch (err: any) {
+      console.error(
+        "❌ Error fetching commits:",
+        err.status,
+        err.message || err
+      );
+      break;
+    }
   }
 
   return commits;

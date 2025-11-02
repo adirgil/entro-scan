@@ -14,8 +14,6 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Starting scan for ${owner}/${repo}...`);
-
   const lastcommit = getlastcommit();
   const commits = await getcommits(owner, repo);
 

@@ -4,9 +4,6 @@ import fs from "fs";
 import { getcommitdetails } from "./githubService";
 import { awsaccesskeypattern, awssecretkeypattern } from "../utils/patterns";
 
-/**
- * סורק קומיט אחד ומחפש דליפות של AWS keys בתוך ה-diff שלו.
- */
 export async function scancommit(owner: string, repo: string, sha: string) {
   const commitdata = await getcommitdetails(owner, repo, sha);
   const committer = commitdata.commit.committer?.name ?? "unknown";
@@ -15,17 +12,14 @@ export async function scancommit(owner: string, repo: string, sha: string) {
 
   const results: any[] = [];
 
-  // עוברים על כל הקבצים בקומיט
   for (const file of commitdata.files || []) {
-    if (!file.patch) continue; // לפעמים אין patch (למשל בקבצים בינאריים)
+    if (!file.patch) continue;
 
     const patch = file.patch;
 
-    // חיפוש לפי שני regexים
     const accessmatches = patch.match(awsaccesskeypattern) || [];
     const secretmatches = patch.match(awssecretkeypattern) || [];
 
-    // אם נמצא משהו, נוסיף למערך התוצאות
     for (const match of [...accessmatches, ...secretmatches]) {
       results.push({
         commitsha: sha,
@@ -38,9 +32,23 @@ export async function scancommit(owner: string, repo: string, sha: string) {
     }
   }
 
-  // אם נמצאו תוצאות — נוסיף לקובץ results.json
+  // ✨ שינוי כאן — קריאה, מיזוג, וכתיבה חזרה
   if (results.length > 0) {
-    fs.appendFileSync("results.json", JSON.stringify(results, null, 2) + "\n");
+    const filePath = "results.json";
+    let existing: any[] = [];
+
+    if (fs.existsSync(filePath)) {
+      try {
+        const content = fs.readFileSync(filePath, "utf8");
+        existing = JSON.parse(content);
+      } catch (e) {
+        console.warn("⚠️ Couldn't parse results.json, starting fresh.");
+        existing = [];
+      }
+    }
+
+    const updated = [...existing, ...results];
+    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2));
   }
 
   return results;
