@@ -8,6 +8,7 @@ async function main() {
   const args = process.argv.slice(2);
   const owner = args[0];
   const repo = args[1];
+  const branch = args[2] || "main";
 
   if (!owner || !repo) {
     console.error("Usage: npm run dev <owner> <repo>");
@@ -15,7 +16,7 @@ async function main() {
   }
 
   const lastcommit = getlastcommit();
-  const commits = await getcommits(owner, repo);
+  const commits = await getcommits(owner, repo, branch);
 
   let continueScanning = !lastcommit;
   let scannedCount = 0;

@@ -9,7 +9,7 @@ const octokit = new Octokit({
   auth: process.env.githubtoken,
 });
 
-export async function getcommits(owner: string, repo: string) {
+export async function getcommits(owner: string, repo: string, branch = "main") {
   const commits = [];
 
   let page = 1;
@@ -20,6 +20,7 @@ export async function getcommits(owner: string, repo: string) {
       const response = await octokit.repos.listCommits({
         owner,
         repo,
+        sha: branch,
         per_page: perPage,
         page,
       });
@@ -38,6 +39,10 @@ export async function getcommits(owner: string, repo: string) {
 
       page++;
     } catch (err: any) {
+      if (err.status === 404) {
+        console.error(`⚠️ Branch '${branch}' not found in ${owner}/${repo}.`);
+        break;
+      }
       console.error(
         "❌ Error fetching commits:",
         err.status,
